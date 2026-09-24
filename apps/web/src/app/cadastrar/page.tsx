@@ -2,13 +2,21 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { Botao } from '@/components/botao';
 import { Campo } from '@/components/campo';
 import { formatarTelefone, soDigitos } from '@/lib/api';
 import { isApiError, useAuth } from '@/lib/auth-context';
 
 export default function CadastrarPage() {
+  return (
+    <Suspense fallback={null}>
+      <CadastrarPageContent />
+    </Suspense>
+  );
+}
+
+function CadastrarPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const conviteToken = searchParams.get('convite');

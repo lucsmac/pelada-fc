@@ -2,13 +2,21 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { Botao } from '@/components/botao';
 import { Campo } from '@/components/campo';
 import { formatarTelefone, soDigitos } from '@/lib/api';
 import { isApiError, useAuth } from '@/lib/auth-context';
 
 export default function EntrarPage() {
+  return (
+    <Suspense fallback={null}>
+      <EntrarPageContent />
+    </Suspense>
+  );
+}
+
+function EntrarPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const conviteToken = searchParams.get('convite');
