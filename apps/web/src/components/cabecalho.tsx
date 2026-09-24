@@ -89,6 +89,14 @@ export function Cabecalho() {
           {estado.status === 'autenticado' && (
             <div className="flex items-center gap-2 md:gap-3">
               <Link
+                href="/pelada/iniciar"
+                aria-label="Iniciar pelada"
+                className="inline-flex h-9 shrink-0 items-center gap-2 bg-accent px-2 font-display text-xs uppercase tracking-wider text-[#0B0D10] hover:brightness-95 md:px-3 md:text-sm"
+              >
+                <IconeBola />
+                <span className="hidden md:inline">Iniciar pelada</span>
+              </Link>
+              <Link
                 href="/convites"
                 className="hidden text-xs font-semibold uppercase tracking-wider text-text-secondary hover:text-text md:inline"
               >
@@ -139,6 +147,22 @@ export function Cabecalho() {
         </>
       )}
     </header>
+  );
+}
+
+function IconeBola() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3v6M12 15v6M3 12h6M15 12h6M6 6l4 4M14 14l4 4M18 6l-4 4M10 14l-4 4" />
+    </svg>
   );
 }
 

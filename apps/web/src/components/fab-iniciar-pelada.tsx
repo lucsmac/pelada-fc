@@ -4,17 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 
-// Rotas onde o FAB estorvaria conteúdo fixo (bottom bars, wizard, placar).
-const ROTAS_SEM_FAB = [
-  /^\/pelada\/iniciar/,
-  /^\/partidas\/[^/]+\/ao-vivo/,
-  /^\/partidas\/[^/]+\/gols/,
-  /^\/partidas\/[^/]+\/desempate/,
-  /^\/partidas\/[^/]+\/resumo/,
-  /^\/entrar/,
-  /^\/cadastrar/,
-];
-
 function IconeBola() {
   return (
     <svg
@@ -31,11 +20,13 @@ function IconeBola() {
   );
 }
 
+// FAB grande só na home — nas outras telas o CTA fica no header (compacto)
+// pra não estorvar o conteúdo.
 export function FabIniciarPelada() {
   const { estado } = useAuth();
   const pathname = usePathname();
   if (estado.status !== 'autenticado') return null;
-  if (pathname && ROTAS_SEM_FAB.some((r) => r.test(pathname))) return null;
+  if (pathname !== '/') return null;
   return (
     <Link
       href="/pelada/iniciar"

@@ -68,10 +68,34 @@ export default function ResumoPage() {
   }, [carregar, estado.status]);
 
   const times = useMemo(() => ordenarTimes(partida?.times ?? []), [partida?.times]);
+  // Racha 3+ times: rodadas são disjuntas (winner stays). O placar aqui é
+  // o da última rodada (após o último `rodada_encerrada`) — somar gols da
+  // partida inteira misturaria rodadas de duelos diferentes. Times fora de
+  // campo na última rodada não aparecem no placar principal.
+  const rodada3Mais = (partida?.times.length ?? 0) >= 3;
+  const emCampoUltimaRodada = useMemo<string[]>(() => {
+    if (!partida) return [];
+    if (!rodada3Mais) return times.map((t) => t.id);
+    if (partida.emCampoTeamIds.length === 2) return [...partida.emCampoTeamIds];
+    return times.slice(0, 2).map((t) => t.id);
+  }, [partida, rodada3Mais, times]);
   const placares = useMemo(
-    () => contarGolsPorTime(partida?.eventos ?? [], times),
-    [partida?.eventos, times],
+    () => contarGolsPorTime(partida?.eventos ?? [], times, rodada3Mais),
+    [partida?.eventos, times, rodada3Mais],
   );
+  const timesEmCampo = useMemo(
+    () => times.filter((t) => emCampoUltimaRodada.includes(t.id)),
+    [times, emCampoUltimaRodada],
+  );
+  const timesForaDeCampo = useMemo(
+    () => times.filter((t) => !emCampoUltimaRodada.includes(t.id)),
+    [times, emCampoUltimaRodada],
+  );
+  const rankingPorTime = useMemo(() => {
+    const mapa = new Map<string, { vitorias: number; derrotas: number; saldoGols: number }>();
+    for (const r of partida?.ranking ?? []) mapa.set(r.teamId, r);
+    return mapa;
+  }, [partida?.ranking]);
 
   if (erro) {
     return (
@@ -88,7 +112,7 @@ export default function ResumoPage() {
     );
   }
 
-  const vencedor = deduzirVencedor(partida, times, placares);
+  const vencedor = deduzirVencedor(partida, timesEmCampo, placares);
   const gols = partida.eventos.filter((e) => e.tipo === 'gol' || e.tipo === 'gol_contra');
 
   const compartilhar = async () => {
@@ -123,7 +147,7 @@ export default function ResumoPage() {
       </h1>
 
       <section className="mt-8 flex flex-col divide-y divide-border border-y border-border bg-panel">
-        {times.map((t) => (
+        {timesEmCampo.map((t) => (
           <div key={t.id} className="flex items-center gap-3 px-3 py-3">
             <span className="h-5 w-5 flex-none" style={{ backgroundColor: t.cor ?? '#5C6470' }} />
             <span className="flex-1 truncate font-display text-base uppercase tracking-wider">
@@ -138,6 +162,40 @@ export default function ResumoPage() {
           </div>
         ))}
       </section>
+
+      {rodada3Mais && timesForaDeCampo.length > 0 && (
+        <section className="mt-4">
+          <p className="mb-2 font-display text-[10px] uppercase tracking-wider text-text-tertiary">
+            Fora de campo
+          </p>
+          <div className="flex flex-col divide-y divide-border border-y border-border bg-panel">
+            {timesForaDeCampo.map((t) => {
+              const r = rankingPorTime.get(t.id);
+              const jogou = r != null && (r.vitorias > 0 || r.derrotas > 0);
+              return (
+                <div key={t.id} className="flex items-center gap-3 px-3 py-2">
+                  <span
+                    className="h-4 w-4 flex-none"
+                    style={{ backgroundColor: t.cor ?? '#5C6470' }}
+                  />
+                  <span className="flex-1 truncate font-display text-sm uppercase tracking-wider text-text-secondary">
+                    {t.nome}
+                  </span>
+                  {jogou ? (
+                    <span className="font-display text-[10px] uppercase tracking-wider text-text-tertiary tabular-nums">
+                      {r!.vitorias}V · {r!.derrotas}D
+                    </span>
+                  ) : (
+                    <span className="font-display text-[10px] uppercase tracking-wider text-text-tertiary">
+                      Não jogou
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {partida.desempateVencedorTeamId && partida.modoDesempate && (
         <p className="mt-6 text-center text-sm text-text-secondary">
@@ -209,11 +267,20 @@ function ordenarTimes(times: TimeDTO[]): TimeDTO[] {
 function contarGolsPorTime(
   eventos: EventoPartidaDTO[],
   times: TimeDTO[],
+  escoparPorRodada = false,
 ): Map<string, number> {
   const mapa = new Map<string, number>();
   for (const t of times) mapa.set(t.id, 0);
+  let cutoff: Date | null = null;
+  if (escoparPorRodada) {
+    for (const e of eventos) {
+      if (e.tipo !== 'rodada_encerrada') continue;
+      if (!cutoff || e.criadoEm > cutoff) cutoff = e.criadoEm;
+    }
+  }
   for (const e of eventos) {
     if (e.tipo !== 'gol' && e.tipo !== 'gol_contra') continue;
+    if (cutoff && e.criadoEm <= cutoff) continue;
     mapa.set(e.teamId, (mapa.get(e.teamId) ?? 0) + 1);
   }
   return mapa;

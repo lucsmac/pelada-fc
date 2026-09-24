@@ -2218,6 +2218,52 @@ export async function partidasRoutes(app: FastifyInstance) {
         statusPorJogador.set(p.jogadorId, p.status);
       }
 
+      // Pré-mapeia novo teamId por time original — precisamos dos IDs antes
+      // da criação pra montar `emCampoTeamIds` da nova partida em racha 3+.
+      const mapaTimes = new Map<string, string>();
+      for (const t of detalhe.times) mapaTimes.set(t.id, gerarId());
+
+      // Racha 3+ times: preserva o vencedor da última rodada em campo — sai
+      // o perdedor, entra o próximo da fila (alfabético entre os que estavam
+      // fora). Sem isso, a nova partida cai no default `[times[0], times[1]]`
+      // e o vencedor perde o lugar em campo.
+      let emCampoInicial: string[] = [];
+      if (detalhe.times.length >= 3 && detalhe.emCampoTeamIds.length === 2) {
+        const [a, b] = detalhe.emCampoTeamIds as [string, string];
+        const ultimaRodada = await app.prisma.eventoPartida.findFirst({
+          where: { partidaId: detalhe.id, tipo: 'rodada_encerrada' },
+          orderBy: { criadoEm: 'desc' },
+          select: { criadoEm: true },
+        });
+        const eventosGol = await app.prisma.eventoPartida.findMany({
+          where: {
+            partidaId: detalhe.id,
+            tipo: { in: ['gol', 'gol_contra'] },
+            ...(ultimaRodada ? { criadoEm: { gt: ultimaRodada.criadoEm } } : {}),
+          },
+          select: { teamId: true },
+        });
+        const gA = eventosGol.filter((e) => e.teamId === a).length;
+        const gB = eventosGol.filter((e) => e.teamId === b).length;
+        const vencedorOriginal = gA > gB ? a : gB > gA ? b : a;
+        const perdedorOriginal = vencedorOriginal === a ? b : a;
+        const foraDeCampoOrdenado = [...detalhe.times]
+          .filter((t) => !detalhe.emCampoTeamIds.includes(t.id))
+          .sort((x, y) => x.nome.localeCompare(y.nome));
+        const proximoOriginal = foraDeCampoOrdenado[0]?.id ?? perdedorOriginal;
+        emCampoInicial = [
+          mapaTimes.get(vencedorOriginal)!,
+          mapaTimes.get(proximoOriginal)!,
+        ];
+      } else if (detalhe.times.length >= 2) {
+        // 2 times: mantém a ordem original (o frontend define lado A/B).
+        const timesOrdenados = [...detalhe.times].sort((x, y) => x.nome.localeCompare(y.nome));
+        emCampoInicial = [
+          mapaTimes.get(timesOrdenados[0]!.id)!,
+          mapaTimes.get(timesOrdenados[1]!.id)!,
+        ];
+      }
+
       const novaId = gerarId();
       await app.prisma.$transaction(async (tx) => {
         await tx.partida.create({
@@ -2232,11 +2278,12 @@ export async function partidasRoutes(app: FastifyInstance) {
             metaGols: detalhe.metaGols,
             duracaoMinutos: detalhe.duracaoMinutos,
             modoDesempate: detalhe.modoDesempate,
+            emCampoTeamIds: emCampoInicial,
           },
         });
         const jogadoresJaCriados = new Set<string>();
         for (const timeOriginal of detalhe.times) {
-          const novoTimeId = gerarId();
+          const novoTimeId = mapaTimes.get(timeOriginal.id)!;
           await tx.team.create({
             data: {
               id: novoTimeId,
