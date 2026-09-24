@@ -48,14 +48,18 @@ export const authPlugin = fp(async (app) => {
     reply.setCookie(REFRESH_COOKIE, token, {
       httpOnly: true,
       secure: env.COOKIE_SECURE,
-      sameSite: 'lax',
+      sameSite: env.COOKIE_SECURE ? 'none' : 'lax',
       path: '/v1/auth',
       signed: true,
     });
   });
 
   app.decorate('clearRefreshCookie', (reply) => {
-    reply.clearCookie(REFRESH_COOKIE, { path: '/v1/auth' });
+    reply.clearCookie(REFRESH_COOKIE, {
+      path: '/v1/auth',
+      secure: env.COOKIE_SECURE,
+      sameSite: env.COOKIE_SECURE ? 'none' : 'lax',
+    });
   });
 
   app.decorate('authenticate', async (request, reply) => {
