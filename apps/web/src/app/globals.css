@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #c7f23e;
+}
+
+html,
+body {
+  margin: 0;
+  background: #0b0d10;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
