@@ -1,0 +1,29 @@
+{
+  "name": "@peladafc/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Schemas Zod e DTOs compartilhados entre web e api",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@peladafc/domain": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@peladafc/config": "workspace:*",
+    "typescript": "^5.7.2"
+  }
+}

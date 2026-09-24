@@ -1,0 +1,23 @@
+{
+  "name": "@peladafc/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Configurações compartilhadas (tsconfig, eslint)",
+  "files": [
+    "tsconfig.base.json",
+    "tsconfig.node.json",
+    "tsconfig.next.json",
+    "eslint.base.mjs"
+  ],
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.node.json": "./tsconfig.node.json",
+    "./tsconfig.next.json": "./tsconfig.next.json",
+    "./eslint": "./eslint.base.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "typescript-eslint": "^8.19.0"
+  }
+}

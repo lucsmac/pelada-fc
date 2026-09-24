@@ -1,0 +1,675 @@
+// PeladaFC — schema inicial (Etapa 0)
+// IDs: UUID v7 gerados na aplicação (packages/db/src/ids.ts).
+// Novas entidades (User, Local, GroupMember, etc.) entram nas etapas 1+.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+
+enum Modalidade {
+  fut7
+  campo_7
+  campo_11
+  society
+  futsal
+  beach_soccer
+  futevolei
+}
+
+enum TipoLocal {
+  arena_society
+  campo_futebol_11
+  campo_futebol_7
+  campo_areia
+  quadra_coberta
+  quadra_aberta
+}
+
+enum Superficie {
+  grama_sintetica
+  grama_natural
+  areia
+  piso
+}
+
+enum PapelMembro {
+  admin
+  membro
+}
+
+enum StatusPresenca {
+  confirmado
+  recusado
+  lista_espera
+}
+
+enum FuncaoPartida {
+  goleiro
+  linha
+}
+
+enum PosicaoLinha {
+  zagueiro
+  lateral
+  volante
+  meia
+  atacante
+}
+
+enum StatusPartida {
+  agendada
+  em_andamento
+  finalizada
+  cancelada
+}
+
+enum StatusSolicitacao {
+  pendente
+  aceito
+  recusado
+  cancelado
+  expirado
+}
+
+enum DiaSemana {
+  domingo
+  segunda
+  terca
+  quarta
+  quinta
+  sexta
+  sabado
+}
+
+// Tesouraria: custo é fixo por pessoa (aluguel R$10/cabeça) OU total rateado
+// entre os confirmados (juiz R$30 dividido entre N).
+enum TipoCusto {
+  por_jogador
+  rateado
+}
+
+// Modo de desempate quando a partida termina com placar igualado (só relevante
+// para partidas com meta de gols configurada).
+enum ModoDesempate {
+  par_impar
+  penaltis
+  shootout
+  gol_de_ouro
+}
+
+// Evento pontual dentro de uma partida em modo "ao vivo". `penalti_desempate`
+// registra cada gol de uma disputa de pênaltis/shootout separadamente do
+// placar principal. `expulsao` marca um jogador como fora do jogo — não conta
+// pro placar, só serve pra UI desabilitar o jogador.
+enum TipoEvento {
+  gol
+  gol_contra
+  penalti_desempate
+  expulsao
+  // Registro de substituição — permite o Desfazer reverter troca de jogadores.
+  // `teamId` = time destino do entra. `jogadorId` = entra. `assistenteJogadorId`
+  // reaproveitado como "sai" (nullable, quando entrou sem tirar ninguém).
+  substituicao
+  // Âncora que encerra a rodada num racha de 3+ times. `teamId` do evento
+  // aponta pro vencedor da rodada. Placar da rodada seguinte é calculado
+  // só a partir dos eventos criados após a âncora mais recente.
+  rodada_encerrada
+}
+
+// -----------------------------------------------------------------------------
+// Local — arena/campo/quadra onde as peladas acontecem. Compartilhado entre
+// peladas: um mesmo Local pode hospedar N peladas.
+//
+// `modalidadesSuportadas` diz o que pode ser jogado nesse Local; `tipo` é o
+// que o Local É (arena society, quadra coberta, campo de areia, etc.).
+// `superficies` é lista aberta (grama_sintetica, grama_natural, areia, piso)
+// — validada no zod, não como enum, para permitir extensão sem migration.
+
+model Local {
+  id                    String       @id @db.Uuid
+  nome                  String
+  tipo                  TipoLocal
+  cidadeNome            String
+  cidadeUf              String       @db.Char(2)
+  bairro                String?
+  endereco              String?
+  latitude              Float?
+  longitude             Float?
+  superficies           Superficie[] @default([])
+  modalidadesSuportadas Modalidade[] @default([])
+  verificado            Boolean      @default(false)
+  criadoPorUserId       String       @db.Uuid
+  criadoEm              DateTime     @default(now())
+
+  criadoPor User     @relation(fields: [criadoPorUserId], references: [id])
+  peladas   Pelada[]
+
+  @@index([cidadeNome, cidadeUf])
+  @@index([tipo])
+  @@index([criadoPorUserId])
+}
+
+// -----------------------------------------------------------------------------
+// Pelada — comunidade recorrente
+
+model Pelada {
+  id                    String     @id @db.Uuid
+  slug                  String     @unique
+  nome                  String
+  descricao             String?
+  modalidade            Modalidade
+  localId               String     @db.Uuid
+  diaSemana             DiaSemana
+  horario               String // formato HH:MM
+  // Configuração de times por partida. `totalJogadores` e `maxGoleiros`
+  // são derivados (quantidadeTimes × jogadoresPorTime / goleirosPorTime)
+  // e calculados no server ao serializar a Pelada.
+  quantidadeTimes       Int        @default(2)
+  // Inclui goleiros — ex: 7 = 1 goleiro + 6 linha por time.
+  jogadoresPorTime      Int        @default(7)
+  goleirosPorTime       Int        @default(1)
+  // Quantas pessoas cabem na lista de espera antes de rejeitar novas
+  // confirmações. Default 4.
+  tamanhoReserva        Int        @default(4)
+  // Se false, goleiros ficam de fora do rateio de custos (comum em várias
+  // peladas: quem toma o gol não paga). Default true — todo mundo paga igual.
+  goleirosPagam         Boolean    @default(true)
+  limiteMembros         Int?
+  abertaParaNovos       Boolean    @default(true)
+  publica               Boolean    @default(false)
+  aprovacaoObrigatoria  Boolean    @default(true)
+  criadoPorUserId       String     @db.Uuid
+  temporadaAtualId      String?    @db.Uuid
+  // Token do link público de convite (compartilhável por WhatsApp/Instagram).
+  // Gerado sob demanda pelo admin; único por pelada; nunca expira.
+  tokenConvitePublico   String?    @unique
+  // Se true, convidados avulsos da partida também entram no rateio dos custos.
+  // Default true: convidado é tratado igual a membro no cálculo.
+  convidadosPagamCustos Boolean    @default(true)
+  criadoEm              DateTime   @default(now())
+
+  criadoPor         User               @relation("PeladasCriadas", fields: [criadoPorUserId], references: [id])
+  local             Local              @relation(fields: [localId], references: [id])
+  temporadaAtual    Temporada?         @relation("PeladaTemporadaAtual", fields: [temporadaAtualId], references: [id])
+  temporadas        Temporada[]        @relation("TemporadasDaPelada")
+  partidas          Partida[]
+  membros           GroupMember[]
+  candidaturas      GroupApplication[]
+  convites          GroupInvitation[]
+  seguidores        PeladaFollow[]
+  custosRecorrentes CustoRecorrente[]
+
+  @@index([localId])
+  @@index([publica, abertaParaNovos])
+  @@index([criadoPorUserId])
+}
+
+// -----------------------------------------------------------------------------
+// GroupMember — relaciona Jogador a Pelada com papel (admin/membro).
+//
+// Um jogador só pode estar uma vez em cada pelada. Papel admin dá permissão
+// para adicionar/remover membros e editar a pelada. O criador da pelada
+// (Pelada.criadoPorUserId) é sempre admin e é o único que pode deletá-la.
+
+model GroupMember {
+  id        String      @id @db.Uuid
+  peladaId  String      @db.Uuid
+  jogadorId String      @db.Uuid
+  papel     PapelMembro @default(membro)
+  entrouEm  DateTime    @default(now())
+
+  pelada  Pelada  @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+  jogador Jogador @relation(fields: [jogadorId], references: [id], onDelete: Cascade)
+
+  @@unique([peladaId, jogadorId])
+  @@index([peladaId])
+  @@index([jogadorId])
+}
+
+// -----------------------------------------------------------------------------
+// User — conta autenticável (opcional; existe apenas para "perfil completo")
+//
+// Um Jogador pode existir sem User (cadastro simples — só nome), permitindo
+// registrar estatísticas de participantes menos engajados. Quando essa pessoa
+// resolve criar conta, o Jogador é "reivindicado" (linkado via Jogador.userId).
+
+model User {
+  id           String   @id @db.Uuid
+  // Identificador primário — usado para login e recovery. Sempre presente.
+  telefone     String   @unique
+  senhaHash    String
+  nome         String
+  // Email é opcional: pode ser adicionado depois em /perfil.
+  email        String?  @unique
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  jogador              Jogador?
+  locaisCriados        Local[]
+  peladasCriadas       Pelada[]           @relation("PeladasCriadas")
+  candidaturas         GroupApplication[]
+  convitesCriados      GroupInvitation[]  @relation("ConvitesCriados")
+  convidadosCriados    PartidaConvidado[] @relation("ConvidadosCriados")
+  peladasSeguidas      PeladaFollow[]
+  jogadoresSeguidos    JogadorFollow[]    @relation("SeguidorUser")
+  custosPartidaCriados CustoPartida[]     @relation("CustosPartidaCriados")
+  pagamentosMarcados   PagamentoPartida[] @relation("PagamentosMarcados")
+  partidasCriadas      Partida[]          @relation("PartidasCriadas")
+  eventosCriados       EventoPartida[]    @relation("EventosCriados")
+}
+
+// -----------------------------------------------------------------------------
+// Jogador — perfil esportivo. Existe com ou sem User.
+
+model Jogador {
+  id                       String         @id @db.Uuid
+  userId                   String?        @unique @db.Uuid
+  nome                     String
+  apelido                  String?
+  avatarInicial            String         @db.Char(1)
+  cidadeAtual              String?
+  // Função preferida por padrão nas peladas. Usada como default ao confirmar
+  // presença em uma Partida — pode ser sobrescrita por partida.
+  funcaoPreferida          FuncaoPartida?
+  // Só relevante quando funcaoPreferida = linha; ignorado para goleiro.
+  posicaoLinha             PosicaoLinha?
+  // Telefone normalizado E.164 (ex: +5584999998888). Único quando presente —
+  // funciona como âncora para reivindicação: quando alguém faz signup com um
+  // telefone que já pertence a um Jogador sem conta, linkamos ao existente.
+  telefone                 String?        @unique
+  // Privacidade (padrão: perfil aberto; pode ser refinado por jogador)
+  perfilPublico            Boolean        @default(true)
+  mostrarEstatisticas      Boolean        @default(true)
+  mostrarPeladas           Boolean        @default(true)
+  mostrarHistorico         Boolean        @default(true)
+  // Se true, o calendário aparece no perfil público. Padrão false — dono opta.
+  mostrarCalendarioPublico Boolean        @default(false)
+  criadoEm                 DateTime       @default(now())
+
+  user          User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  estatisticas  EstatisticaPartida[]
+  membros       GroupMember[]
+  presencas     Attendance[]
+  teamsJogados  TeamPlayer[]
+  convites      GroupInvitation[]
+  convidadoEm   PartidaConvidado[]
+  seguidores    JogadorFollow[]      @relation("JogadorSeguido")
+  pagamentos    PagamentoPartida[]
+  eventos       EventoPartida[]
+  assistsFeitas EventoPartida[]      @relation("AssistsFeitas")
+}
+
+// -----------------------------------------------------------------------------
+// Follows — usuário segue peladas e jogadores (feed / notificações).
+
+model PeladaFollow {
+  id       String   @id @db.Uuid
+  userId   String   @db.Uuid
+  peladaId String   @db.Uuid
+  criadoEm DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pelada Pelada @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, peladaId])
+  @@index([peladaId])
+}
+
+model JogadorFollow {
+  id        String   @id @db.Uuid
+  userId    String   @db.Uuid
+  jogadorId String   @db.Uuid
+  criadoEm  DateTime @default(now())
+
+  user    User    @relation("SeguidorUser", fields: [userId], references: [id], onDelete: Cascade)
+  jogador Jogador @relation("JogadorSeguido", fields: [jogadorId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jogadorId])
+  @@index([jogadorId])
+}
+
+// -----------------------------------------------------------------------------
+// Temporada
+
+model Temporada {
+  id          String    @id @db.Uuid
+  peladaId    String    @db.Uuid
+  ano         Int
+  numero      Int
+  nome        String? // ex: "2026 T2 - Verão" — opcional; default é derivado de ano/numero
+  inicioEm    DateTime
+  fimEm       DateTime?
+  encerradaEm DateTime?
+
+  pelada          Pelada         @relation("TemporadasDaPelada", fields: [peladaId], references: [id], onDelete: Cascade)
+  partidas        Partida[]
+  peladaComoAtual Pelada[]       @relation("PeladaTemporadaAtual")
+  ranking         SeasonRanking?
+
+  @@unique([peladaId, ano, numero])
+  @@index([peladaId])
+}
+
+// Snapshot congelado do ranking ao encerrar a temporada. Prisma Json guarda a
+// lista de linhas — permite recuperar a temporada mesmo depois que partidas
+// forem editadas.
+model SeasonRanking {
+  id          String   @id @db.Uuid
+  temporadaId String   @unique @db.Uuid
+  linhas      Json // LinhaRanking[]
+  congeladoEm DateTime @default(now())
+
+  temporada Temporada @relation(fields: [temporadaId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// Partida
+
+model Partida {
+  id                      String         @id @db.Uuid
+  // peladaId/temporadaId ficam opcionais para suportar "pelada rápida"
+  // (partida standalone criada pelo fluxo /pelada/iniciar, sem grupo nem
+  // temporada). Quando presentes, a partida entra em ranking e usa as regras
+  // da Pelada; quando null, é uma partida avulsa cujo dono é `criadoPorUserId`.
+  peladaId                String?        @db.Uuid
+  temporadaId             String?        @db.Uuid
+  // Dono da partida standalone. Nullable para não bloquear backfill das
+  // partidas antigas — nessas, a autorização continua vindo do admin da Pelada.
+  criadoPorUserId         String?        @db.Uuid
+  // Nome livre do racha (usado no share do resumo).
+  nome                    String?
+  data                    DateTime
+  status                  StatusPartida  @default(agendada)
+  placarTimeA             Int            @default(0)
+  placarTimeB             Int            @default(0)
+  // --- Modo ao vivo -----------------------------------------------------
+  // Quando `metaGols` está setado, a partida está em modo live: o server
+  // finaliza automaticamente ao atingir a meta e o cliente mostra placar +
+  // cronômetro. `duracaoMinutos` é só display (timer regressivo), não
+  // finaliza sozinho. `duracaoPausadaSegundos` acumula o tempo gasto em
+  // pausa; timer efetivo = (finalizadoEm ou now) - iniciadoEm - duracaoPausadaSegundos.
+  metaGols                Int?
+  duracaoMinutos          Int?
+  iniciadoEm              DateTime?
+  finalizadoEm            DateTime?
+  pausadoEm               DateTime?
+  duracaoPausadaSegundos  Int            @default(0)
+  modoDesempate           ModoDesempate?
+  // Team.id do vencedor declarado no desempate. Não é FK para evitar ciclo
+  // Team ⇄ Partida no onDelete; validado na aplicação.
+  desempateVencedorTeamId String?        @db.Uuid
+  // Racha de 3+ times: quais 2 times estão em campo agora ([teamA, teamB]).
+  // Array vazio em partidas legadas anteriores à feature; nas novas, é
+  // sempre populado com os 2 primeiros times na criação. Não é FK — validado
+  // na aplicação, coerente com desempateVencedorTeamId.
+  emCampoTeamIds          String[]       @default([]) @db.Uuid
+  // Rodada atual dentro da sessão. Cada `rodada_encerrada` incrementa.
+  // Placar da rodada é calculado só a partir dos eventos após a última
+  // âncora `rodada_encerrada`.
+  rodadaAtual             Int            @default(1)
+  // Snapshot do ranking dos times pra evitar replay de eventos em toda leitura.
+  // Estrutura: Array<{ teamId: string, vitorias: number, derrotas: number,
+  // saldoGols: number }>. Streak é derivada dos eventos `rodada_encerrada`
+  // no read (não guardada aqui). Mutado só pelo /encerrar-rodada.
+  rankingJson             Json?
+  criadoEm                DateTime       @default(now())
+
+  pelada       Pelada?              @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+  temporada    Temporada?           @relation(fields: [temporadaId], references: [id])
+  criadoPor    User?                @relation("PartidasCriadas", fields: [criadoPorUserId], references: [id])
+  estatisticas EstatisticaPartida[]
+  presencas    Attendance[]
+  times        Team[]
+  convidados   PartidaConvidado[]
+  custos       CustoPartida[]
+  pagamentos   PagamentoPartida[]
+  eventos      EventoPartida[]
+
+  @@index([peladaId, data])
+  @@index([temporadaId])
+  @@index([criadoPorUserId])
+  @@index([status])
+}
+
+// -----------------------------------------------------------------------------
+// PartidaConvidado — jogador chamado para uma partida específica sem virar
+// membro fixo da pelada. Só admin convida; convidado entra confirmado.
+// Estatísticas (gols/assist/MVP) funcionam igual às de qualquer membro.
+
+model PartidaConvidado {
+  id                 String   @id @db.Uuid
+  partidaId          String   @db.Uuid
+  jogadorId          String   @db.Uuid
+  convidadoPorUserId String   @db.Uuid
+  criadoEm           DateTime @default(now())
+
+  partida      Partida @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  jogador      Jogador @relation(fields: [jogadorId], references: [id], onDelete: Cascade)
+  convidadoPor User    @relation("ConvidadosCriados", fields: [convidadoPorUserId], references: [id])
+
+  @@unique([partidaId, jogadorId])
+  @@index([partidaId])
+  @@index([jogadorId])
+}
+
+// -----------------------------------------------------------------------------
+// Attendance — presença de um Jogador em uma Partida.
+
+model Attendance {
+  id           String         @id @db.Uuid
+  partidaId    String         @db.Uuid
+  jogadorId    String         @db.Uuid
+  status       StatusPresenca @default(confirmado)
+  // Se vai como goleiro ou jogador de linha nesta partida específica.
+  // Capacidade é limitada por (quantidadeTimes × goleirosPorTime) para
+  // goleiros e (quantidadeTimes × (jogadoresPorTime - goleirosPorTime))
+  // para linha.
+  funcao       FuncaoPartida  @default(linha)
+  // Posição preferida para jogar (só aplicável quando funcao = linha).
+  posicaoLinha PosicaoLinha?
+  respondidoEm DateTime       @default(now())
+
+  partida Partida @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  jogador Jogador @relation(fields: [jogadorId], references: [id], onDelete: Cascade)
+
+  @@unique([partidaId, jogadorId])
+  @@index([partidaId])
+  @@index([jogadorId])
+}
+
+// -----------------------------------------------------------------------------
+// Team — time formado dentro de uma Partida (após sorteio ou manualmente).
+
+model Team {
+  id        String  @id @db.Uuid
+  partidaId String  @db.Uuid
+  nome      String // ex: "Time A" ou "Coletes brancos"
+  cor       String? // hex; opcional
+
+  partida   Partida         @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  jogadores TeamPlayer[]
+  eventos   EventoPartida[]
+
+  @@index([partidaId])
+}
+
+model TeamPlayer {
+  id        String @id @db.Uuid
+  teamId    String @db.Uuid
+  jogadorId String @db.Uuid
+
+  team    Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  jogador Jogador @relation(fields: [jogadorId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, jogadorId])
+  @@index([teamId])
+  @@index([jogadorId])
+}
+
+// -----------------------------------------------------------------------------
+// EventoPartida — jogada pontual no modo "ao vivo" (gol, gol contra, gol da
+// disputa de pênaltis). É a fonte da verdade do placar: `placarTimeA/B` na
+// Partida são derivados por count(eventos where teamId=timeA.id) — permite
+// undo trivial e edição retroativa sem inconsistências.
+//
+// `minutoJogo` = segundos desde `Partida.iniciadoEm`, descontando pausas.
+// `jogadorId` é nullable para permitir gols "não identificados" ou lançados
+// via botão de atalho no scoreboard.
+
+model EventoPartida {
+  id                  String     @id @db.Uuid
+  partidaId           String     @db.Uuid
+  // Time A FAVOR de quem o gol conta. Para gol contra, o cliente traduz para
+  // o time beneficiado antes de gravar. Para expulsao, o teamId é o time do
+  // jogador expulso.
+  teamId              String     @db.Uuid
+  jogadorId           String?    @db.Uuid
+  // Autor da assistência (só faz sentido pra tipo=gol). Se null, gol sem
+  // assist. `onDelete: SetNull` porque assistente é derivada — perder o
+  // jogador não deve apagar o gol.
+  assistenteJogadorId String?    @db.Uuid
+  tipo                TipoEvento @default(gol)
+  minutoJogo          Int        @default(0)
+  criadoEm            DateTime   @default(now())
+  criadoPorUserId     String     @db.Uuid
+
+  partida    Partida  @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  jogador    Jogador? @relation(fields: [jogadorId], references: [id], onDelete: SetNull)
+  assistente Jogador? @relation("AssistsFeitas", fields: [assistenteJogadorId], references: [id], onDelete: SetNull)
+  criadoPor  User     @relation("EventosCriados", fields: [criadoPorUserId], references: [id])
+
+  @@index([partidaId, minutoJogo])
+  @@index([teamId])
+  @@index([jogadorId])
+  @@index([assistenteJogadorId])
+}
+
+// -----------------------------------------------------------------------------
+// GroupApplication — pedido de um usuário para entrar em uma pelada pública.
+
+model GroupApplication {
+  id           String            @id @db.Uuid
+  peladaId     String            @db.Uuid
+  userId       String            @db.Uuid // quem pediu
+  mensagem     String?
+  status       StatusSolicitacao @default(pendente)
+  criadoEm     DateTime          @default(now())
+  respondidoEm DateTime?
+
+  pelada Pelada @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([peladaId, userId])
+  @@index([peladaId, status])
+  @@index([userId, status])
+}
+
+// -----------------------------------------------------------------------------
+// GroupInvitation — convite disparado por admin/pelada para um usuário/jogador.
+// Um convite pode referenciar um Jogador existente (linkado a User) ou um
+// email/telefone quando o convidado ainda não tem conta — modelo simples:
+// para o MVP, exigimos que o alvo já seja um Jogador cadastrado.
+
+model GroupInvitation {
+  id              String            @id @db.Uuid
+  peladaId        String            @db.Uuid
+  jogadorId       String            @db.Uuid
+  criadoPorUserId String            @db.Uuid
+  status          StatusSolicitacao @default(pendente)
+  expiraEm        DateTime?
+  criadoEm        DateTime          @default(now())
+  respondidoEm    DateTime?
+
+  pelada    Pelada  @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+  jogador   Jogador @relation(fields: [jogadorId], references: [id], onDelete: Cascade)
+  criadoPor User    @relation("ConvitesCriados", fields: [criadoPorUserId], references: [id])
+
+  @@unique([peladaId, jogadorId, status])
+  @@index([peladaId, status])
+  @@index([jogadorId, status])
+}
+
+// -----------------------------------------------------------------------------
+// EstatisticaPartida — linha de evento (gols/assist/MVP) por jogador/partida
+
+model EstatisticaPartida {
+  id           String  @id @db.Uuid
+  partidaId    String  @db.Uuid
+  jogadorId    String  @db.Uuid
+  gols         Int     @default(0)
+  assistencias Int     @default(0)
+  foiMvp       Boolean @default(false)
+
+  partida Partida @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  jogador Jogador @relation(fields: [jogadorId], references: [id])
+
+  @@unique([partidaId, jogadorId])
+  @@index([jogadorId])
+}
+
+// -----------------------------------------------------------------------------
+// Tesouraria — custos da pelada e das partidas + marcação de pagamento.
+// Não processa pagamento (nada de Pix/Stripe): só define quanto cada jogador
+// deve pagar por partida e permite o admin marcar quem já pagou.
+
+// Custo recorrente aplicado a toda partida da pelada (ex: "Aluguel R$10 por
+// jogador"). `ativo=false` pausa sem apagar histórico.
+model CustoRecorrente {
+  id            String    @id @db.Uuid
+  peladaId      String    @db.Uuid
+  nome          String
+  tipo          TipoCusto
+  valorCentavos Int
+  ativo         Boolean   @default(true)
+  criadoEm      DateTime  @default(now())
+
+  pelada Pelada @relation(fields: [peladaId], references: [id], onDelete: Cascade)
+
+  @@index([peladaId, ativo])
+}
+
+// Custo avulso de uma partida específica (ex: "Bola nova", "Juiz"). Não afeta
+// as próximas partidas.
+model CustoPartida {
+  id              String    @id @db.Uuid
+  partidaId       String    @db.Uuid
+  nome            String
+  tipo            TipoCusto
+  valorCentavos   Int
+  criadoPorUserId String    @db.Uuid
+  criadoEm        DateTime  @default(now())
+
+  partida   Partida @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  criadoPor User    @relation("CustosPartidaCriados", fields: [criadoPorUserId], references: [id])
+
+  @@index([partidaId])
+}
+
+// Marca que o jogador quitou o valor devido daquela partida. Presença do
+// registro = pago; ausência = devendo. `valorCentavos` é snapshot do valor no
+// momento — preserva histórico se admin editar custos depois.
+model PagamentoPartida {
+  id               String   @id @db.Uuid
+  partidaId        String   @db.Uuid
+  jogadorId        String   @db.Uuid
+  valorCentavos    Int
+  pagoEm           DateTime @default(now())
+  marcadoPorUserId String   @db.Uuid
+
+  partida    Partida @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  jogador    Jogador @relation(fields: [jogadorId], references: [id], onDelete: Cascade)
+  marcadoPor User    @relation("PagamentosMarcados", fields: [marcadoPorUserId], references: [id])
+
+  @@unique([partidaId, jogadorId])
+  @@index([partidaId])
+  @@index([jogadorId])
+}
