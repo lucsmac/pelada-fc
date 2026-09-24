@@ -640,6 +640,10 @@ export default function AoVivoPage() {
   };
 
   const desabilitado = enviando || partida.status !== 'em_andamento';
+  // Substituir/trocar time devem funcionar também em `agendada` — permite
+  // ajustar composição antes de iniciar o cronômetro ou entre rodadas.
+  const substituirDesabilitado =
+    enviando || (partida.status !== 'em_andamento' && partida.status !== 'agendada');
   const temFila = times.length > 2;
 
   return (
@@ -730,6 +734,7 @@ export default function AoVivoPage() {
             onAdicionarGol={() => setEscolhendoAutorGol(timesEmCampoAtivos[0]!)}
             onSubstituir={() => setSubstituirEmTime(timesEmCampoAtivos[0]!)}
             desabilitado={desabilitado}
+            substituirDesabilitado={substituirDesabilitado}
           />
           <ColunaTime
             time={timesEmCampo[1]}
@@ -741,6 +746,7 @@ export default function AoVivoPage() {
             onAdicionarGol={() => setEscolhendoAutorGol(timesEmCampoAtivos[1]!)}
             onSubstituir={() => setSubstituirEmTime(timesEmCampoAtivos[1]!)}
             desabilitado={desabilitado}
+            substituirDesabilitado={substituirDesabilitado}
           />
         </div>
       )}
@@ -1095,16 +1101,16 @@ function CabecalhoAoVivo({
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-nav-bg">
-      <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
+      <div className="mx-auto grid max-w-md grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3">
         <Link
           href="/"
-          className="font-display text-xs uppercase tracking-wider text-text-secondary hover:text-text"
+          className="justify-self-start font-display text-xs uppercase tracking-wider text-text-secondary hover:text-text"
         >
           ← Sair
         </Link>
         <span
           className={[
-            'font-display text-2xl uppercase tracking-wider tabular-nums',
+            'justify-self-center font-display text-2xl uppercase tracking-wider tabular-nums',
             corTimer,
           ]
             .join(' ')
@@ -1112,7 +1118,7 @@ function CabecalhoAoVivo({
         >
           {formatado}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onAlternarMudo}
@@ -1279,6 +1285,7 @@ function ColunaTime({
   onAdicionarGol,
   onSubstituir,
   desabilitado,
+  substituirDesabilitado,
 }: {
   time: TimeDTO;
   funcaoPorJogador: Map<string, FuncaoPartida>;
@@ -1289,6 +1296,7 @@ function ColunaTime({
   onAdicionarGol: () => void;
   onSubstituir: () => void;
   desabilitado: boolean;
+  substituirDesabilitado: boolean;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -1322,7 +1330,7 @@ function ColunaTime({
       <button
         type="button"
         onClick={onSubstituir}
-        disabled={desabilitado}
+        disabled={substituirDesabilitado}
         className="flex h-10 items-center justify-center border border-dashed border-border font-display text-[10px] uppercase tracking-wider text-text-tertiary transition-all active:scale-[0.98] hover:text-text disabled:opacity-40"
       >
         ⇄ Substituição

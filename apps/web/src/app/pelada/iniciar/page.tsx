@@ -1230,9 +1230,9 @@ function ListaJogadores({
           }}
           placeholder="Nome do jogador"
           maxLength={60}
-          className="h-12 flex-1 border border-border-strong bg-panel-2 px-3 text-base text-text placeholder:text-text-tertiary focus:border-accent focus:outline-none"
+          className="h-12 min-w-0 flex-1 border border-border-strong bg-panel-2 px-3 text-base text-text placeholder:text-text-tertiary focus:border-accent focus:outline-none"
         />
-        <Botao type="button" onClick={adicionar} className="h-12" disabled={!novo.trim()}>
+        <Botao type="button" onClick={adicionar} className="h-12 flex-none px-4" disabled={!novo.trim()}>
           Add
         </Botao>
       </div>
