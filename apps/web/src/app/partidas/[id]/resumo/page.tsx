@@ -116,7 +116,7 @@ export default function ResumoPage() {
         {partida.status === 'finalizada' ? 'Partida encerrada' : 'Em andamento'}
       </p>
       <h1
-        className="mt-4 text-center font-display text-6xl uppercase leading-none tracking-wider"
+        className="mt-4 text-center font-display text-4xl uppercase leading-none tracking-wider sm:text-5xl md:text-6xl"
         style={{ color: vencedor ? corLegivel(vencedor.cor) : undefined }}
       >
         {vencedor ? `${vencedor.nome} venceu!` : 'Empate'}

@@ -16,12 +16,12 @@ export default function HomePage() {
           Hero
           ============================================================ */}
       <section className="border-b border-border">
-        <div className="mx-auto grid max-w-container gap-10 px-6 py-20 md:grid-cols-[1.6fr_1fr] md:px-16 md:py-28">
+        <div className="mx-auto grid max-w-container gap-8 px-4 py-12 md:grid-cols-[1.6fr_1fr] md:gap-10 md:px-16 md:py-28">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-accent">
               O que jogamos aqui é história
             </p>
-            <h1 className="mt-4 font-display text-5xl uppercase leading-[0.95] md:text-7xl">
+            <h1 className="mt-4 font-display text-4xl uppercase leading-[0.95] sm:text-5xl md:text-7xl">
               Sua pelada em modo
               <br />
               <span className="text-accent">profissional</span>.
@@ -71,7 +71,7 @@ export default function HomePage() {
           Os dois loops — Organize x Descubra
           ============================================================ */}
       <section className="border-b border-border bg-panel-2">
-        <div className="mx-auto grid max-w-container gap-6 px-6 py-16 md:grid-cols-2 md:px-16">
+        <div className="mx-auto grid max-w-container gap-4 px-4 py-10 md:grid-cols-2 md:gap-6 md:px-16 md:py-16">
           <ColunaLoop
             etiqueta="Loop de organização"
             titulo="Do sorteio ao ranking, tudo salvo."
@@ -106,17 +106,17 @@ export default function HomePage() {
           Números/features em destaque
           ============================================================ */}
       <section className="border-b border-border">
-        <div className="mx-auto max-w-container px-6 py-16 md:px-16">
+        <div className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16">
           <p className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
             Feito para peladas que levam a sério
           </p>
-          <h2 className="mt-2 font-display text-4xl uppercase leading-none md:text-5xl">
+          <h2 className="mt-2 font-display text-3xl uppercase leading-none sm:text-4xl md:text-5xl">
             Tudo que você precisa
             <br />
             <span className="text-accent">num só lugar.</span>
           </h2>
 
-          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-3 md:mt-10 md:grid-cols-4 md:gap-4">
             <FeatureTile
               rotulo="Modalidades"
               valor="7"
@@ -140,7 +140,7 @@ export default function HomePage() {
             />
           </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-3 md:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-3 md:mt-10 md:grid-cols-3">
             <CardRecurso titulo="Presença & sorteio">
               Lista de presença online, chamada por membros e algoritmo de sorteio
               balanceado entre 2 e 4 times.
@@ -172,15 +172,15 @@ export default function HomePage() {
           Como funciona
           ============================================================ */}
       <section className="border-b border-border bg-panel-2">
-        <div className="mx-auto max-w-container px-6 py-16 md:px-16">
+        <div className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16">
           <p className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
             Como funciona
           </p>
-          <h2 className="mt-2 font-display text-4xl uppercase leading-none md:text-5xl">
+          <h2 className="mt-2 font-display text-3xl uppercase leading-none sm:text-4xl md:text-5xl">
             Três passos.
           </h2>
 
-          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-4 md:mt-10 md:grid-cols-3 md:gap-6">
             <Passo numero="01" titulo="Cadastre-se com seu telefone">
               Se alguém já te adicionou como jogador em uma pelada, vinculamos seu
               histórico automaticamente pelo número.
@@ -201,8 +201,8 @@ export default function HomePage() {
           CTA final
           ============================================================ */}
       <section>
-        <div className="mx-auto max-w-container px-6 py-20 text-center md:px-16">
-          <h2 className="font-display text-5xl uppercase leading-none md:text-7xl">
+        <div className="mx-auto max-w-container px-4 py-12 text-center md:px-16 md:py-20">
+          <h2 className="font-display text-4xl uppercase leading-none sm:text-5xl md:text-7xl">
             Bora <span className="text-accent">jogar?</span>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-text-secondary">

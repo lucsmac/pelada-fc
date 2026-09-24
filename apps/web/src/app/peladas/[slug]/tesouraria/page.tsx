@@ -139,7 +139,7 @@ export default function TesourariaPeladaPage() {
 
   if (erroCarregar) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16">
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16">
         <h1 className="font-display text-4xl uppercase">{erroCarregar}</h1>
         <Link href="/peladas" className="mt-4 inline-block text-accent hover:underline">
           ← Voltar
@@ -150,7 +150,7 @@ export default function TesourariaPeladaPage() {
 
   if (!pelada) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">
         Carregando…
       </main>
     );
@@ -175,7 +175,7 @@ export default function TesourariaPeladaPage() {
         >
           ← Voltar para a pelada
         </Link>
-        <h1 className="mt-2 font-display text-5xl uppercase leading-none">Tesouraria</h1>
+        <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">Tesouraria</h1>
         <p className="mt-2 text-sm text-text-secondary">{pelada.nome}</p>
       </div>
 

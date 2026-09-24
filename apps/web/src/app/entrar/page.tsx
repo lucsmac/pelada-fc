@@ -52,7 +52,7 @@ function EntrarPageContent() {
   return (
     <main className="mx-auto flex max-w-md flex-col gap-8 px-6 py-16">
       <div>
-        <h1 className="font-display text-5xl uppercase leading-none">Entrar</h1>
+        <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Entrar</h1>
         <p className="mt-3 text-sm text-text-secondary">
           Acesse sua conta para organizar peladas e acompanhar sua história.
         </p>

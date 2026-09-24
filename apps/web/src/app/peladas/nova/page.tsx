@@ -128,7 +128,7 @@ export default function NovaPeladaPage() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-12">
       <div>
-        <h1 className="font-display text-5xl uppercase leading-none">Nova pelada</h1>
+        <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Nova pelada</h1>
         <p className="mt-3 text-sm text-text-secondary">
           Você será o dono. Depois de criar, pode adicionar jogadores (com ou sem conta).
         </p>
@@ -207,7 +207,7 @@ export default function NovaPeladaPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <SeletorEnum
             rotulo="Dia da semana"
             valor={diaSemana}
@@ -229,7 +229,7 @@ export default function NovaPeladaPage() {
           <legend className="px-2 text-[11px] font-bold uppercase tracking-wider text-text-secondary">
             Formato da partida
           </legend>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo
               rotulo="Quantidade de times"
               type="number"

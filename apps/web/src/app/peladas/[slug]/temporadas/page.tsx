@@ -103,7 +103,7 @@ export default function TemporadasPage() {
   };
 
   if (!pelada) {
-    return <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>;
+    return <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>;
   }
 
   return (
@@ -114,7 +114,7 @@ export default function TemporadasPage() {
       >
         ← {pelada.nome}
       </Link>
-      <h1 className="mt-2 font-display text-5xl uppercase leading-none">Temporadas</h1>
+      <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">Temporadas</h1>
 
       {souAdmin && (
         <section className="mt-8 border border-border bg-panel p-5">

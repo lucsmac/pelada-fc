@@ -54,7 +54,7 @@ export default function CandidaturasPage() {
   };
 
   if (!pelada) {
-    return <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>;
+    return <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>;
   }
 
   return (
@@ -65,7 +65,7 @@ export default function CandidaturasPage() {
       >
         ← {pelada.nome}
       </Link>
-      <h1 className="mt-2 font-display text-5xl uppercase leading-none">Candidaturas</h1>
+      <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">Candidaturas</h1>
       {erro && <p className="mt-4 text-sm text-coral">{erro}</p>}
 
       <ul className="mt-8 flex flex-col divide-y divide-border">

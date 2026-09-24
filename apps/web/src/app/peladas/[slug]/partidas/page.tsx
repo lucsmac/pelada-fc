@@ -152,13 +152,13 @@ export default function PartidasPeladaPage() {
 
   if (erroCarregar) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16">
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16">
         <h1 className="font-display text-4xl uppercase">{erroCarregar}</h1>
       </main>
     );
   }
   if (!pelada) {
-    return <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>;
+    return <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>;
   }
 
   return (
@@ -169,7 +169,7 @@ export default function PartidasPeladaPage() {
       >
         ← {pelada.nome}
       </Link>
-      <h1 className="mt-2 font-display text-5xl uppercase leading-none">Partidas</h1>
+      <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">Partidas</h1>
       <p className="mt-3 text-sm text-text-secondary">
         Rotina: <b className="text-text">{DIA_LABEL[pelada.diaSemana] ?? pelada.diaSemana}</b> ·{' '}
         <b className="text-text">{pelada.horario}</b>. As próximas ocorrências são criadas

@@ -45,16 +45,16 @@ export default function LocaisPage() {
   }, [busca, uf, cidade, bairro]);
 
   return (
-    <main className="mx-auto max-w-container px-16 py-12">
-      <div className="flex items-end justify-between gap-6">
+    <main className="mx-auto max-w-container px-4 py-8 md:px-16 md:py-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
         <div>
-          <h1 className="font-display text-5xl uppercase leading-none">Locais</h1>
+          <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Locais</h1>
           <p className="mt-2 text-sm text-text-secondary">
             Arenas, campos e quadras cadastrados pela comunidade.
           </p>
         </div>
         {estado.status === 'autenticado' && (
-          <Link href="/locais/novo">
+          <Link href="/locais/novo" className="sm:self-end">
             <Botao>Cadastrar local</Botao>
           </Link>
         )}

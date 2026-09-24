@@ -94,7 +94,7 @@ export default function ConvitePublicoPage() {
         <p className="text-[11px] font-bold uppercase tracking-widest text-text-tertiary">
           Convite
         </p>
-        <h1 className="font-display text-5xl uppercase leading-none">Link inválido</h1>
+        <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Link inválido</h1>
         <p className="text-sm text-text-secondary">
           Esse convite não existe ou foi revogado pelo dono da pelada.
         </p>
@@ -142,7 +142,7 @@ export default function ConvitePublicoPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-text-secondary">
             {dados.criadoPor.nome} convidou você para
           </p>
-          <h1 className="mt-3 font-display text-6xl uppercase leading-[0.9] md:text-7xl">
+          <h1 className="mt-3 font-display text-4xl uppercase leading-[0.9] sm:text-5xl md:text-7xl">
             {dados.pelada.nome}
           </h1>
           <p className="mt-4 text-[11px] font-bold uppercase tracking-widest text-accent">

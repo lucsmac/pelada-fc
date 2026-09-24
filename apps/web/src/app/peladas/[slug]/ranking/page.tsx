@@ -43,7 +43,7 @@ export default function RankingPage() {
   }, [slug, categoria]);
 
   if (!pelada) {
-    return <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>;
+    return <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>;
   }
 
   return (
@@ -54,7 +54,7 @@ export default function RankingPage() {
       >
         ← {pelada.nome}
       </Link>
-      <h1 className="mt-2 font-display text-5xl uppercase leading-none">Ranking</h1>
+      <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">Ranking</h1>
 
       <nav className="mt-8 flex flex-wrap gap-2 border-b border-border">
         {CATEGORIAS_RANKING.map((c) => {

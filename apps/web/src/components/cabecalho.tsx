@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useChrome } from '@/lib/chrome-context';
 import { Botao } from './botao';
@@ -8,13 +10,42 @@ import { Botao } from './botao';
 export function Cabecalho() {
   const { estado, sair } = useAuth();
   const { ocultarMenu } = useChrome();
+  const pathname = usePathname();
+  const [menuAberto, setMenuAberto] = useState(false);
+
+  useEffect(() => {
+    setMenuAberto(false);
+  }, [pathname]);
 
   if (ocultarMenu) return null;
 
+  const linksNav = [
+    ...(estado.status === 'autenticado'
+      ? [{ href: '/vestiario' as const, rotulo: 'Vestiário' }]
+      : []),
+    { href: '/peladas' as const, rotulo: 'Peladas' },
+    { href: '/locais' as const, rotulo: 'Locais' },
+    ...(estado.status === 'autenticado'
+      ? [
+          { href: '/convites' as const, rotulo: 'Convites' },
+          { href: '/perfil' as const, rotulo: 'Meu perfil' },
+        ]
+      : []),
+  ];
+
   return (
-    <header className="border-b border-border bg-nav-bg">
+    <header className="relative border-b border-border bg-nav-bg">
       <div className="mx-auto flex h-[76px] max-w-container items-center justify-between gap-3 px-4 md:px-16">
         <div className="flex min-w-0 items-center gap-4 md:gap-8">
+          <button
+            type="button"
+            onClick={() => setMenuAberto((v) => !v)}
+            aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={menuAberto}
+            className="grid h-10 w-10 shrink-0 place-items-center border border-border-strong bg-panel md:hidden"
+          >
+            {menuAberto ? <IconeX /> : <IconeMenu />}
+          </button>
           <Link href="/" className="flex shrink-0 items-center gap-2 md:gap-3">
             <span className="grid h-8 w-8 place-items-center bg-accent font-display text-lg text-[#0B0D10]">
               P
@@ -85,6 +116,58 @@ export function Cabecalho() {
           )}
         </div>
       </div>
+
+      {menuAberto && (
+        <>
+          <button
+            type="button"
+            aria-label="Fechar menu"
+            onClick={() => setMenuAberto(false)}
+            className="fixed inset-0 top-[76px] z-30 bg-black/40 md:hidden"
+          />
+          <nav className="absolute inset-x-0 top-[76px] z-40 flex flex-col border-b border-border bg-nav-bg md:hidden">
+            {linksNav.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="border-b border-border px-4 py-4 text-sm font-semibold uppercase tracking-wider text-text-secondary hover:bg-panel hover:text-text"
+              >
+                {l.rotulo}
+              </Link>
+            ))}
+          </nav>
+        </>
+      )}
     </header>
+  );
+}
+
+function IconeMenu() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden
+    >
+      <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconeX() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden
+    >
+      <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+    </svg>
   );
 }

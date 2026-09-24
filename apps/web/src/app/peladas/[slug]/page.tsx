@@ -139,7 +139,7 @@ export default function PeladaDetailPage() {
 
   if (naoEncontrada) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16">
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16">
         <h1 className="font-display text-4xl uppercase">Pelada não encontrada</h1>
         <Link href="/peladas" className="mt-4 inline-block text-accent hover:underline">
           ← Voltar
@@ -150,7 +150,7 @@ export default function PeladaDetailPage() {
 
   if (!pelada) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>
     );
   }
 
@@ -384,7 +384,7 @@ function CabecalhoPelada({ pelada, local }: { pelada: PeladaDTO; local: LocalDTO
       <p className="text-[11px] font-bold uppercase tracking-wider text-accent">
         {MODALIDADE_LABEL[pelada.modalidade]}
       </p>
-      <h1 className="mt-1 font-display text-5xl uppercase leading-none md:text-6xl">
+      <h1 className="mt-1 font-display text-4xl uppercase leading-none sm:text-5xl md:text-6xl">
         {pelada.nome}
       </h1>
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-secondary">

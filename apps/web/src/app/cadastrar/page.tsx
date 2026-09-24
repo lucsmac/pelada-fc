@@ -62,7 +62,7 @@ function CadastrarPageContent() {
   if (reivindicou) {
     return (
       <main className="mx-auto flex max-w-md flex-col gap-6 px-6 py-16">
-        <h1 className="font-display text-5xl uppercase leading-none">Bem-vindo!</h1>
+        <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Bem-vindo!</h1>
         <p className="text-sm text-text-secondary">
           Encontramos um jogador com esse telefone já registrado em uma pelada. Vinculamos sua nova
           conta ao histórico existente — seus gols, assistências e partidas anteriores agora
@@ -76,7 +76,7 @@ function CadastrarPageContent() {
   return (
     <main className="mx-auto flex max-w-md flex-col gap-8 px-6 py-16">
       <div>
-        <h1 className="font-display text-5xl uppercase leading-none">Cadastrar</h1>
+        <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Cadastrar</h1>
         <p className="mt-3 text-sm text-text-secondary">
           Crie sua conta para participar de peladas e acompanhar suas estatísticas.
         </p>

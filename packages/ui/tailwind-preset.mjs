@@ -2,6 +2,9 @@
 export default {
   theme: {
     extend: {
+      screens: {
+        xs: '380px',
+      },
       colors: {
         bg: '#0B0D10',
         'nav-bg': '#0E1013',

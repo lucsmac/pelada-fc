@@ -86,12 +86,12 @@ export default function MeuPerfilPage() {
   };
 
   if (!perfil) {
-    return <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>;
+    return <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>;
   }
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="font-display text-5xl uppercase leading-none">Meu perfil</h1>
+      <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Meu perfil</h1>
 
       <form onSubmit={salvarDados} className="mt-8 flex flex-col gap-4">
         <Campo

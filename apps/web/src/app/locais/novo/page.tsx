@@ -79,7 +79,7 @@ export default function NovoLocalPage() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 py-12">
       <div>
-        <h1 className="font-display text-5xl uppercase leading-none">Novo local</h1>
+        <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Novo local</h1>
         <p className="mt-3 text-sm text-text-secondary">
           Cadastre uma arena, campo ou quadra que a comunidade utiliza.
         </p>

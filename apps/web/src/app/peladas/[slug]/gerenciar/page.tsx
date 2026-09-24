@@ -107,7 +107,7 @@ export default function GerenciarPeladaPage() {
 
   if (erroCarregar) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16">
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16">
         <h1 className="font-display text-4xl uppercase">{erroCarregar}</h1>
         <Link href="/peladas" className="mt-4 inline-block text-accent hover:underline">
           ← Voltar
@@ -118,7 +118,7 @@ export default function GerenciarPeladaPage() {
 
   if (!pelada) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>
     );
   }
 
@@ -131,7 +131,7 @@ export default function GerenciarPeladaPage() {
         >
           ← Voltar para a pelada
         </Link>
-        <h1 className="mt-2 font-display text-5xl uppercase leading-none">Gerenciar</h1>
+        <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">Gerenciar</h1>
         <p className="mt-2 text-sm text-text-secondary">{pelada.nome}</p>
       </div>
 
@@ -257,7 +257,7 @@ function FormatoPelada({
         Formato da partida
       </h2>
       <form onSubmit={salvar} className="mt-5 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Campo
             rotulo="Quantidade de times"
             type="number"

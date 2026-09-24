@@ -33,13 +33,13 @@ export default function PerfilJogadorPage() {
 
   if (erro) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16">
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16">
         <h1 className="font-display text-4xl uppercase">{erro}</h1>
       </main>
     );
   }
   if (!perfil) {
-    return <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>;
+    return <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>;
   }
 
   const { jogador, carreira, peladas, rating } = perfil;
@@ -51,7 +51,7 @@ export default function PerfilJogadorPage() {
           {jogador.avatarInicial}
         </div>
         <div className="flex-1">
-          <h1 className="font-display text-5xl uppercase leading-none">{jogador.nome}</h1>
+          <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">{jogador.nome}</h1>
           {jogador.apelido && (
             <p className="mt-1 text-sm text-text-secondary">"{jogador.apelido}"</p>
           )}

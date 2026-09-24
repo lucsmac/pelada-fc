@@ -111,13 +111,13 @@ export default function PartidaDetalhePage() {
 
   if (erroCarregar) {
     return (
-      <main className="mx-auto max-w-container px-16 py-16">
+      <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16">
         <h1 className="font-display text-4xl uppercase">{erroCarregar}</h1>
       </main>
     );
   }
   if (!partida) {
-    return <main className="mx-auto max-w-container px-16 py-16 text-text-tertiary">Carregando…</main>;
+    return <main className="mx-auto max-w-container px-4 py-10 md:px-16 md:py-16 text-text-tertiary">Carregando…</main>;
   }
 
   const registrarPresenca = async (
@@ -174,7 +174,7 @@ export default function PartidaDetalhePage() {
           ← Partidas de {pelada.nome}
         </Link>
       )}
-      <h1 className="mt-2 font-display text-5xl uppercase leading-none">
+      <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl">
         {new Date(partida.data).toLocaleDateString('pt-BR', {
           day: '2-digit',
           month: 'long',

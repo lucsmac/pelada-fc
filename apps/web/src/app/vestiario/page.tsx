@@ -101,7 +101,7 @@ export default function VestiarioPage() {
           <p className="text-[11px] font-bold uppercase tracking-widest text-accent">
             Vestiário
           </p>
-          <h1 className="mt-2 font-display text-5xl uppercase leading-none md:text-6xl">
+          <h1 className="mt-2 font-display text-4xl uppercase leading-none sm:text-5xl md:text-6xl">
             Olá, {primeiroNome}.
           </h1>
           <p className="mt-3 text-sm text-text-secondary">
@@ -191,7 +191,7 @@ function ProximaPartida({ dados }: { dados: MinhaProximaPartidaResponse | null }
           <p className="font-display text-2xl uppercase leading-none text-text-secondary">
             {p.pelada.nome}
           </p>
-          <h2 className="mt-3 font-display text-5xl uppercase leading-none md:text-6xl">
+          <h2 className="mt-3 font-display text-4xl uppercase leading-none sm:text-5xl md:text-6xl">
             {formatarDataCurta(dataObj)}
           </h2>
           <p className="mt-3 text-sm text-text-secondary">

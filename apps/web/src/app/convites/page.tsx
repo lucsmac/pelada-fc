@@ -39,7 +39,7 @@ export default function ConvitesPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="font-display text-5xl uppercase leading-none">Meus convites</h1>
+      <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Meus convites</h1>
       {erro && <p className="mt-4 text-sm text-coral">{erro}</p>}
 
       <ul className="mt-8 flex flex-col divide-y divide-border">

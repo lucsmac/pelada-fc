@@ -70,16 +70,16 @@ export default function PeladasPage() {
   }, [busca, cidade, modalidade, diaSemana, abertas]);
 
   return (
-    <main className="mx-auto max-w-container px-16 py-12">
-      <div className="flex items-end justify-between gap-6">
+    <main className="mx-auto max-w-container px-4 py-8 md:px-16 md:py-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
         <div>
-          <h1 className="font-display text-5xl uppercase leading-none">Peladas</h1>
+          <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">Peladas</h1>
           <p className="mt-2 text-sm text-text-secondary">
             Descubra peladas públicas na sua região.
           </p>
         </div>
         {estado.status === 'autenticado' && (
-          <Link href="/peladas/nova">
+          <Link href="/peladas/nova" className="sm:self-end">
             <Botao>Criar pelada</Botao>
           </Link>
         )}

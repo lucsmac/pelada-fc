@@ -276,7 +276,7 @@ function ContadorPenaltis({
     >
       <p className="truncate font-display text-sm uppercase tracking-wider">{time.nome}</p>
       <p
-        className="font-display text-6xl leading-none tabular-nums"
+        className="font-display text-5xl leading-none tabular-nums sm:text-6xl"
         style={{ color: time.cor ?? undefined }}
       >
         {valor}
