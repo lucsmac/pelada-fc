@@ -18,8 +18,7 @@ services:
       corepack prepare pnpm@10.12.4 --activate
       pnpm install --frozen-lockfile
       pnpm --filter @peladafc/db exec prisma generate
-      pnpm --filter @peladafc/db build
-      pnpm --filter @peladafc/api build
+      pnpm exec turbo run build --filter=@peladafc/api
     startCommand: |
       pnpm --filter @peladafc/db exec prisma migrate deploy && node apps/api/dist/main.js
     envVars:
@@ -58,7 +57,7 @@ services:
       corepack enable
       corepack prepare pnpm@10.12.4 --activate
       pnpm install --frozen-lockfile
-      pnpm --filter @peladafc/web... build
+      pnpm exec turbo run build --filter=@peladafc/web
     startCommand: |
       pnpm --filter @peladafc/web exec next start --port $PORT --hostname 0.0.0.0
     envVars:
