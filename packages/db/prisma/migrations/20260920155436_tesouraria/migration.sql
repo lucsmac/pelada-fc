@@ -38,9 +38,6 @@ ALTER TABLE "JogadorFollow" DROP CONSTRAINT "JogadorFollow_userId_fkey";
 ALTER TABLE "Local" DROP CONSTRAINT "Local_criadoPorUserId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "PartidaConvidado" DROP CONSTRAINT "PartidaConvidado_convidadoPorUserId_fkey";
-
--- DropForeignKey
 ALTER TABLE "Pelada" DROP CONSTRAINT "Pelada_criadoPorUserId_fkey";
 
 -- DropForeignKey
@@ -149,9 +146,6 @@ ALTER TABLE "JogadorFollow" ADD CONSTRAINT "JogadorFollow_jogadorId_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "SeasonRanking" ADD CONSTRAINT "SeasonRanking_temporadaId_fkey" FOREIGN KEY ("temporadaId") REFERENCES "Temporada"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PartidaConvidado" ADD CONSTRAINT "PartidaConvidado_convidadoPorUserId_fkey" FOREIGN KEY ("convidadoPorUserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Attendance" ADD CONSTRAINT "Attendance_partidaId_fkey" FOREIGN KEY ("partidaId") REFERENCES "Partida"("id") ON DELETE CASCADE ON UPDATE CASCADE;
