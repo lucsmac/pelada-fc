@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: peladafc-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: peladafc
+      POSTGRES_PASSWORD: peladafc
+      POSTGRES_DB: peladafc
+    ports:
+      - "5433:5432"
+    volumes:
+      - peladafc-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U peladafc"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  peladafc-postgres:
